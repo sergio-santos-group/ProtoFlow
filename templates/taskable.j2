@@ -1,0 +1,35 @@
+function {{ node.get_instance_name() }}(
+    {%- for port in inputs %}
+    {{ port.get_channel_name() }}::Channel{ {{- port.get_type() -}} },
+    {%- endfor %}
+    
+    {%- for port in outputs %}
+    {{ port.get_channel_name() }}{{loop.index}}::Channel{ {{- port.get_type() -}} },
+    {%- endfor %})
+
+    # READ FROM STATIC INPUT CHANNELS (IF ANY)
+    {%- for port in inputs if port.static %}
+    {{ port.get_variable_name() }} = take!({{ port.get_channel_name() }})
+    {%- endfor %}
+
+    {% if forever %}
+    while true
+    {% endif %}
+        # READ FROM INPUT CHANNELS (IF ANY)
+        {%- for port in inputs if not port.static %}
+        {{ port.get_variable_name() }} = take!({{ port.get_channel_name() }})
+        {%- endfor %}
+    
+        # PROCESS DATA
+        {{ block | render | indent(width=8) }}
+
+        # WRITE TO OUTPUT CHANNELS (IF ANY)
+        {%- for port in outputs %}
+        put!({{ port.get_channel_name() }}{{loop.index}}, {{ port.get_variable_name() -}})
+        {%- endfor %}
+    
+    {% if forever %}
+    end
+    {% endif %}
+    
+end

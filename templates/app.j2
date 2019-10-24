@@ -1,0 +1,34 @@
+using ProtoSyn
+
+const MAXBUFFERSIZE = 0
+
+# --------------------------------------------------------
+# FUNCTIONS
+# --------------------------------------------------------
+{% for function in functions %}
+{{function}}
+
+{% endfor %}
+
+# --------------------------------------------------------
+# CHANNELS
+# --------------------------------------------------------
+{% for port in channels %}
+const {{port.get_channel_instance()}} = Channel{ {{port.get_type()}} }(MAXBUFFERSIZE)
+{%- endfor %}
+
+# --------------------------------------------------------
+# TASKS
+# --------------------------------------------------------
+{% for node,args in tasks %}
+task_{{node.id}} = @task {{ node.get_instance_name() }}( {{args|map(attribute='get_channel_instance')|call|join(',')}} )
+{%- endfor %}
+
+# --------------------------------------------------------
+# EXECUTION
+# --------------------------------------------------------
+{% for node,args in tasks %}
+schedule(task_{{node.id}})
+{%- endfor %}
+
+yield()
