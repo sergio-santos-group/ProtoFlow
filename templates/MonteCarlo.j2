@@ -1,0 +1,19 @@
+# 1. instantiate components
+{{ sampler | render }}
+
+# 2. instantiate driver
+driver = ProtoSyn.Drivers.MonteCarlo(
+    nsteps={{nsteps}},
+    sampler={{sampler['in_sampler']}}
+)
+
+# 3. run driver
+{%- if callback|length > 0 %}
+{{ out_molecule }} = driver({{in_molecule}}) do ds,st
+    {% for cb in callback %}
+    {{ cb | render(driver_state='ds', state='st') | indent(width=4) }}
+    {% endfor %}
+end
+{% else %}
+{{out_molecule}} = driver()
+{% endif %}
