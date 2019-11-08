@@ -1,10 +1,15 @@
+{% set mutator = mutator[0] %}
+{% set evaluator = evaluator[0] %}
+
 # 1. instantiate components
-{{ sampler | render }}
+{{ mutator | render }}
+{{ evaluator | render(molecule=in_molecule) }}
 
 # 2. instantiate driver
 driver = ProtoSyn.Drivers.MonteCarlo(
     nsteps={{nsteps}},
-    sampler={{sampler['in_sampler']}}
+    mutator={{mutator['in_mutator']}},
+    evaluator={{evaluator['in_evaluator']}}
 )
 
 # 3. run driver

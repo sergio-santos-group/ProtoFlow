@@ -144,7 +144,10 @@ class Node(object):
         return f'{self.name.replace(" ","_")}_{self.id}'
     
     def get_scope(self):
-        scope = {d['name']:d['value'] for d in self.config}
+        scope = {
+            d['name']: (d['value'] if 'value' in d else d['checked']) 
+            for d in self.config
+        }
         scope['template'] = jenv.get_template(self.name + '.j2')
         scope['name'] = self.name
         scope['id'] = self.id
@@ -162,11 +165,16 @@ class Node(object):
     def get_components_scope(self):
         scope = {}
         for port in self.get_inports(PortType.COMPONENT):
-            source = port.others[0]
-            item_scope = source.parent.get_scope()
-            item_scope[source.get_name()] = source.get_variable_name()
-            item_scope[  port.get_name()] = source.get_variable_name()
-            scope[port.name] = item_scope
+            # source = port.others[0]
+            scopes = []
+            for source in port.others:
+                item_scope = source.parent.get_scope()
+                item_scope[source.get_name()] = source.get_variable_name()
+                item_scope[  port.get_name()] = source.get_variable_name()
+                item_scope['components'] = source.parent.get_components_scope()
+                scopes.append(item_scope)
+            scope[port.name] = scopes
+            # scope[port.name] = item_scope
         return scope
     
     def get_channels_scope(self):

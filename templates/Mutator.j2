@@ -1,0 +1,6 @@
+{{out_mutator}} = ProtoSyn.Mutator()
+{% for mutator in components['mutators'] %}
+{{mutator | render}}
+push!({{out_mutator}}, {{mutator['in_mutators']}})
+{% endfor %}
+

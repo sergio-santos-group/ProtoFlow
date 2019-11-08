@@ -1,0 +1,20 @@
+# Assign forcefield
+ff = include(joinpath(ProtoSyn.Calculators.Forcefield.resource_dir, "amber03/forcefield2.jl"))
+mp = ProtoSyn.Calculators.Forcefield.loadmap("amber03/aminoacids.yml");
+top = ProtoSyn.Calculators.Forcefield.assign({{molecule}}, ff, mp)
+
+{{out_AmberFF}} = ProtoSyn.Calculators.Forcefield.aggregate(
+    {%- if bonds %}
+    top[:HamonicBond],
+    {%- endif %}
+    {%- if angles %}
+    top[:HamonicAngle],
+    {%- endif %}
+    {%- if proper %}
+    top[:Proper],
+    {%- endif %}
+    {%- if improper %}
+    top[:Improper],
+    {%- endif %}
+)
+
